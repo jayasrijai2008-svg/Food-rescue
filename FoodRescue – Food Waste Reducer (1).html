@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FoodRescue – Food Waste Reducer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3faf5;--card:#ffffff;--ink:#12301f;--muted:#587264;--line:#d6e7dc;
+  --green:#1b8648;--green-d:#136b38;--on-green:#ffffff;--soft:#e3f3e8;
+  --urgent:#b93a07;--urgent-bg:#ffeadb;--claimed:#6b7f72;--claimed-bg:#eaf0ec;
+  --shadow:0 1px 2px rgba(18,48,31,.06);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0d1a12;--card:#15271c;--ink:#e5f4ea;--muted:#92ae9c;--line:#27412f;--green:#43c477;--green-d:#6ad595;--on-green:#06210f;--soft:#1a3324;--urgent:#ffb98a;--urgent-bg:#4a2410;--claimed:#9bb3a4;--claimed-bg:#1d3125;--shadow:none}
+}
+:root[data-theme="dark"]{--bg:#0d1a12;--card:#15271c;--ink:#e5f4ea;--muted:#92ae9c;--line:#27412f;--green:#43c477;--green-d:#6ad595;--on-green:#06210f;--soft:#1a3324;--urgent:#ffb98a;--urgent-bg:#4a2410;--claimed:#9bb3a4;--claimed-bg:#1d3125;--shadow:none}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Figtree,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 40px}
+header{padding:22px 0 14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.35rem;letter-spacing:-.01em}
+.logo{width:36px;height:36px;border-radius:10px;background:var(--green);color:var(--on-green);display:grid;place-items:center;font-size:1.2rem}
+.tag{margin:6px 0 0;color:var(--muted);font-size:.95rem}
+.hero{margin-top:14px;background:var(--green);color:var(--on-green);border-radius:18px;padding:18px 18px 16px}
+.hero .big{font-size:2.6rem;font-weight:800;line-height:1;letter-spacing:-.02em}
+.hero p{margin:6px 0 0;font-size:1rem;opacity:.95}
+.hero .sub{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pill{background:rgba(255,255,255,.2);border-radius:999px;padding:3px 12px;font-size:.85rem;font-weight:600}
+:root[data-theme="dark"] .pill,:root:not([data-theme="light"]) .pill{background:rgba(6,33,15,.18)}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--bg);display:flex;gap:6px;padding:10px 0;border-bottom:1px solid var(--line)}
+nav button{flex:1;padding:10px 6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;font:inherit;font-weight:600;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--green);border-color:var(--green);color:var(--on-green)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+section{padding-top:16px}
+.search{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none}
+.chip{flex:none;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:.9rem;font-weight:600;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--soft);border-color:var(--green);color:var(--green-d)}
+.chip.u[aria-pressed="true"]{background:var(--urgent-bg);border-color:var(--urgent);color:var(--urgent)}
+.count{color:var(--muted);font-size:.9rem;margin:10px 2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card.urgent{border-color:var(--urgent);border-width:2px}
+.row{display:flex;gap:12px;align-items:flex-start}
+.emo{font-size:1.8rem;width:48px;height:48px;border-radius:12px;background:var(--soft);display:grid;place-items:center;flex:none}
+.card h3{margin:0;font-size:1.05rem;line-height:1.3}
+.meta{color:var(--muted);font-size:.88rem;margin-top:2px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.badge{font-size:.8rem;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--soft);color:var(--green-d)}
+.badge.u{background:var(--urgent-bg);color:var(--urgent)}
+.badge.c{background:var(--claimed-bg);color:var(--claimed)}
+.act{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap}
+.btn{padding:10px 18px;border-radius:12px;border:1px solid var(--green);background:var(--green);color:var(--on-green);font:inherit;font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--green-d)}
+.btn.danger{border-color:var(--urgent);color:var(--urgent);background:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.act input{flex:1;min-width:160px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.empty{text-align:center;padding:36px 16px;color:var(--muted);border:1px dashed var(--line);border-radius:16px}
+form label{display:block;font-weight:600;margin:14px 0 4px;font-size:.95rem}
+form input,form select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.err{color:var(--urgent);font-weight:600;margin:10px 0 0;min-height:1.2em}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.stat b{display:block;font-size:1.9rem;font-weight:800;letter-spacing:-.02em;color:var(--green-d)}
+.stat span{color:var(--muted);font-size:.88rem}
+.bar{height:14px;border-radius:999px;background:var(--claimed-bg);overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:var(--green);width:0;transition:width .4s}
+.log{list-style:none;padding:0;margin:0}
+.log li{padding:10px 0;border-bottom:1px solid var(--line);font-size:.93rem}
+.log li small{color:var(--muted);display:block}
+h2{font-size:1.1rem;margin:22px 0 8px}
+.foot{display:flex;justify-content:center;margin-top:28px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:30;max-width:90vw;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand"><span class="logo" aria-hidden="true">🥬</span>FoodRescue</div>
+  <p class="tag">Surplus food goes to neighbours, not the bin.</p>
+  <div class="hero">
+    <div class="big" id="hBig">0</div>
+    <p>portions waiting for pickup right now</p>
+    <div class="sub"><span class="pill" id="hUrg">0 urgent</span><span class="pill" id="hSaved">0 kg rescued</span></div>
+  </div>
+</header>
+
+<nav role="tablist" aria-label="Sections">
+  <button role="tab" id="t-browse" aria-selected="true" data-tab="browse">Find food</button>
+  <button role="tab" id="t-donate" aria-selected="false" data-tab="donate">Donate</button>
+  <button role="tab" id="t-dash" aria-selected="false" data-tab="dash">Dashboard</button>
+</nav>
+
+<section id="browse">
+  <input class="search" id="q" type="search" placeholder="Search by food, place or donor" aria-label="Search food">
+  <div class="chips" id="chips"></div>
+  <div class="count" id="count"></div>
+  <div id="list"></div>
+</section>
+
+<section id="donate" hidden>
+  <form id="form" novalidate>
+    <label for="fName">What are you donating?</label>
+    <input id="fName" maxlength="60" placeholder="e.g. Vegetable biryani">
+    <div class="two">
+      <div><label for="fQty">Portions</label><input id="fQty" type="number" min="1" max="500" inputmode="numeric" placeholder="20"></div>
+      <div><label for="fCat">Type</label><select id="fCat"></select></div>
+    </div>
+    <label for="fDonor">Your name or business</label>
+    <input id="fDonor" maxlength="50" placeholder="e.g. Green Leaf Café">
+    <label for="fLoc">Pickup location</label>
+    <input id="fLoc" maxlength="60" placeholder="e.g. 12 Market Road">
+    <label for="fExp">Best to collect within</label>
+    <select id="fExp">
+      <option value="1">1 hour</option><option value="2">2 hours</option><option value="4" selected>4 hours</option>
+      <option value="8">8 hours</option><option value="24">1 day</option><option value="48">2 days</option>
+    </select>
+    <p class="err" id="err" role="alert"></p>
+    <button class="btn" type="submit" style="width:100%;margin-top:6px">Donate food</button>
+  </form>
+</section>
+
+<section id="dash" hidden>
+  <div class="grid" id="stats"></div>
+  <h2>Pickup progress</h2>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="count" id="barTxt"></div>
+  <h2>Recent activity</h2>
+  <ul class="log" id="log"></ul>
+  <div class="foot"><button class="btn danger" id="reset" type="button">Reset demo data</button></div>
+</section>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+var KEY="foodrescue_v1", H=3600000, CATS=["Cooked meals","Bakery","Produce","Packaged","Dairy"];
+var EMO={"Cooked meals":"🍛","Bakery":"🥖","Produce":"🥕","Packaged":"🥫","Dairy":"🥛"};
+var state, tab="browse", cat="All", onlyUrgent=false, claiming=null, resetArmed=false, tT, rT;
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+
+function seed(){
+  var n=Date.now();
+  function it(i,name,cat,qty,donor,loc,h,claimedBy){return {id:"s"+i,name:name,cat:cat,qty:qty,donor:donor,loc:loc,exp:n+h*H,claimedBy:claimedBy||null,claimedAt:claimedBy?n-H/2:null,created:n-i*H/3}}
+  return {items:[
+    it(1,"Vegetable biryani trays","Cooked meals",30,"Annapoorna Kitchen","Main Road",1.5),
+    it(2,"Fresh sandwiches","Bakery",18,"Daily Crumb Café","Station Square",2.2),
+    it(3,"Mixed seasonal vegetables","Produce",12,"Fresh Basket Market","Market Street",9),
+    it(4,"Whole-grain bread loaves","Bakery",25,"Sunrise Bakery","Lake View Road",5),
+    it(5,"Canned beans and pasta","Packaged",40,"Corner Store","Temple Lane",48),
+    it(6,"Milk cartons (1 L)","Dairy",16,"Milk Mart","College Road",26),
+    it(7,"Lunch boxes (rice and dal)","Cooked meals",22,"Hotel Saravana","Bus Stand",0.8),
+    it(8,"Fruit boxes","Produce",15,"Orchard Co-op","Garden Street",-0.5),
+    it(9,"Chapati packs","Cooked meals",20,"Community Hall","Park Road",4,"Hope Shelter")
+  ],log:[
+    {t:n-H/2,x:"Hope Shelter claimed Chapati packs"},
+    {t:n-H,x:"Community Hall donated 20 Chapati packs"}
+  ]};
+}
+function load(){try{var r=localStorage.getItem(KEY);if(r){var d=JSON.parse(r);if(d&&Array.isArray(d.items))return d}}catch(e){}return seed()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function st(i){if(i.claimedBy)return "claimed";var l=i.exp-Date.now();if(l<=0)return "expired";return l<=3*H?"urgent":"ok"}
+function left(ms){if(ms<=0)return "Expired";var m=Math.ceil(ms/60000);if(m<60)return m+" min left";var h=Math.floor(m/60);if(h<24)return h+"h "+(m%60)+"m left";var d=Math.floor(h/24);return d+(d===1?" day":" days")+" left"}
+function ago(t){var m=Math.max(1,Math.round((Date.now()-t)/60000));if(m<60)return m+" min ago";var h=Math.round(m/60);return h<24?h+"h ago":Math.round(h/24)+"d ago"}
+function toast(msg){var t=$("toast");t.textContent=msg;t.classList.add("on");clearTimeout(tT);tT=setTimeout(function(){t.classList.remove("on")},2400)}
+function addLog(x){state.log.unshift({t:Date.now(),x:x});state.log=state.log.slice(0,20)}
+
+function renderChips(){
+  var all=["All"].concat(CATS),h="";
+  all.forEach(function(c){h+='<button class="chip" data-cat="'+esc(c)+'" aria-pressed="'+(cat===c)+'">'+(EMO[c]?EMO[c]+" ":"")+esc(c)+"</button>"});
+  h+='<button class="chip u" id="uChip" aria-pressed="'+onlyUrgent+'">🔥 Urgent only</button>';
+  $("chips").innerHTML=h;
+}
+function renderList(){
+  var q=$("q").value.trim().toLowerCase();
+  var rank={urgent:0,ok:0,expired:1,claimed:2};
+  var arr=state.items.filter(function(i){
+    if(cat!=="All"&&i.cat!==cat)return false;
+    if(onlyUrgent&&st(i)!=="urgent")return false;
+    if(q&&(i.name+" "+i.loc+" "+i.donor+" "+i.cat).toLowerCase().indexOf(q)<0)return false;
+    return true;
+  }).sort(function(a,b){var d=rank[st(a)]-rank[st(b)];return d||a.exp-b.exp});
+  $("count").textContent=arr.length+(arr.length===1?" listing":" listings");
+  if(!arr.length){$("list").innerHTML='<div class="empty">No food matches your search.<br>Clear the filters, or donate something to get started.</div>';return}
+  var h="";
+  arr.forEach(function(i){
+    var s=st(i),b="";
+    if(s==="urgent")b+='<span class="badge u">🔥 Urgent pickup</span>';
+    if(s==="claimed")b+='<span class="badge c">Claimed</span>';
+    if(s==="expired")b+='<span class="badge c">Expired</span>';
+    b+='<span class="badge">'+esc(i.cat)+"</span>";
+    var tl=s==="claimed"?"Claimed by "+esc(i.claimedBy):left(i.exp-Date.now());
+    var act="";
+    if(s==="ok"||s==="urgent"){
+      if(claiming===i.id)act='<div class="act"><input id="cn" maxlength="40" placeholder="Your name or group" aria-label="Your name"><button class="btn" data-act="confirm" data-id="'+i.id+'">Confirm claim</button><button class="btn ghost" data-act="cancel">Cancel</button></div>';
+      else act='<div class="act"><button class="btn" data-act="claim" data-id="'+i.id+'">Claim</button></div>';
+    }
+    h+='<article class="card'+(s==="urgent"?" urgent":"")+'"><div class="row"><div class="emo" aria-hidden="true">'+(EMO[i.cat]||"🍽️")+'</div><div><h3>'+esc(i.name)+'</h3><div class="meta">'+i.qty+" portions from "+esc(i.donor)+'</div><div class="meta">📍 '+esc(i.loc)+" · ⏱ "+tl+'</div></div></div><div class="badges">'+b+"</div>"+act+"</article>";
+  });
+  $("list").innerHTML=h;
+  var cn=$("cn");if(cn)cn.focus();
+}
+function totals(){
+  var d=0,r=0,a=0,u=0,k=0;
+  state.items.forEach(function(i){var s=st(i);d+=i.qty;if(s==="claimed")r+=i.qty;if(s==="ok"||s==="urgent"){a+=i.qty;k++}if(s==="urgent")u++});
+  return {donated:d,rescued:r,avail:a,listings:k,urgent:u,kg:Math.round(r*0.4*10)/10};
+}
+function renderHero(){var t=totals();$("hBig").textContent=t.avail;$("hUrg").textContent=t.urgent+" urgent";$("hSaved").textContent=t.kg+" kg rescued"}
+function renderDash(){
+  var t=totals(),co2=Math.round(t.kg*2.5*10)/10;
+  var cards=[[t.donated,"Portions donated"],[t.rescued,"Portions claimed"],[t.avail,"Portions available"],[t.urgent,"Urgent listings"],[t.kg+" kg","Food saved"],[co2+" kg","CO₂ avoided (estimate)"]];
+  $("stats").innerHTML=cards.map(function(c){return '<div class="stat"><b>'+c[0]+"</b><span>"+c[1]+"</span></div>"}).join("");
+  var p=t.donated?Math.round(t.rescued/t.donated*100):0;
+  $("bar").style.width=p+"%";$("barTxt").textContent=p+"% of donated portions have been claimed";
+  $("log").innerHTML=state.log.length?state.log.map(function(l){return "<li>"+esc(l.x)+"<small>"+ago(l.t)+"</small></li>"}).join(""):'<li>No activity yet.</li>';
+  $("reset").textContent=resetArmed?"Tap again to confirm reset":"Reset demo data";
+}
+function renderAll(){renderHero();renderChips();renderList();renderDash()}
+function setTab(t){
+  tab=t;
+  ["browse","donate","dash"].forEach(function(n){
+    $(n).hidden=n!==t;
+    var b=document.querySelector('[data-tab="'+n+'"]');b.setAttribute("aria-selected",n===t);
+  });
+  if(t==="dash")renderDash();
+  window.scrollTo({top:0});
+}
+
+document.querySelector("nav").addEventListener("click",function(e){var b=e.target.closest("[data-tab]");if(b)setTab(b.getAttribute("data-tab"))});
+$("chips").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  if(b.id==="uChip")onlyUrgent=!onlyUrgent;else cat=b.getAttribute("data-cat");
+  claiming=null;renderChips();renderList();
+});
+$("q").addEventListener("input",function(){claiming=null;renderList()});
+$("list").addEventListener("click",function(e){
+  var b=e.target.closest("[data-act]");if(!b)return;
+  var a=b.getAttribute("data-act"),id=b.getAttribute("data-id");
+  if(a==="claim"){claiming=id;renderList()}
+  else if(a==="cancel"){claiming=null;renderList()}
+  else if(a==="confirm"){
+    var it=state.items.filter(function(x){return x.id===id})[0];
+    if(!it||st(it)==="claimed"||st(it)==="expired"){claiming=null;renderAll();toast("Sorry, this listing is no longer available.");return}
+    var name=($("cn").value||"").trim()||"A neighbour";
+    it.claimedBy=name;it.claimedAt=Date.now();claiming=null;
+    addLog(name+" claimed "+it.name);save();renderAll();
+    toast("Claimed! Pick up from "+it.loc);
+  }
+});
+$("cn")&&0;
+$("list").addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.id==="cn"){var b=document.querySelector('[data-act="confirm"]');if(b)b.click()}});
+
+$("fCat").innerHTML=CATS.map(function(c){return "<option>"+c+"</option>"}).join("");
+$("form").addEventListener("submit",function(e){
+  e.preventDefault();
+  var name=$("fName").value.trim(),qty=parseInt($("fQty").value,10),donor=$("fDonor").value.trim(),loc=$("fLoc").value.trim();
+  var err="";
+  if(!name)err="Enter what food you are donating.";
+  else if(!qty||qty<1)err="Enter the number of portions (1 or more).";
+  else if(!donor)err="Enter your name or business.";
+  else if(!loc)err="Enter a pickup location.";
+  $("err").textContent=err;if(err)return;
+  var hrs=parseFloat($("fExp").value);
+  state.items.unshift({id:"u"+Date.now(),name:name,cat:$("fCat").value,qty:qty,donor:donor,loc:loc,exp:Date.now()+hrs*H,claimedBy:null,claimedAt:null,created:Date.now()});
+  addLog(donor+" donated "+qty+" × "+name);save();
+  $("form").reset();$("fExp").value="4";
+  cat="All";onlyUrgent=false;$("q").value="";
+  renderAll();setTab("browse");toast("Thank you! Your donation is listed.");
+});
+$("reset").addEventListener("click",function(){
+  if(!resetArmed){resetArmed=true;renderDash();clearTimeout(rT);rT=setTimeout(function(){resetArmed=false;renderDash()},3500);return}
+  resetArmed=false;clearTimeout(rT);
+  try{localStorage.removeItem(KEY)}catch(e){}
+  state=seed();save();cat="All";onlyUrgent=false;claiming=null;$("q").value="";
+  renderAll();toast("Demo data restored.");
+});
+
+state=load();renderAll();
+setInterval(function(){if(!claiming){renderHero();renderList();if(tab==="dash")renderDash()}},60000);
+})();
+</script>
+</body>
+</html>
